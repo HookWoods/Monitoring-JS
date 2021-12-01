@@ -21,9 +21,16 @@ function sendRequest(url) {
             }
         })
         .catch(error => {
-            return {
-                url: url,
-                status: 521
+            if(error.response) {
+                return {
+                    url: url,
+                    status: error.response.status
+                }
+            } else {
+                return {
+                    url: url,
+                    status: undefined
+                }
             }
         })
 
