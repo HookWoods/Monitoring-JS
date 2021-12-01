@@ -6,4 +6,9 @@ module.exports = {
             return previous
         }, [[]])
     },
+
+    throwError: function (message) {
+        console.log(message)
+    },
+
 }

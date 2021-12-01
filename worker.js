@@ -5,25 +5,30 @@ parentPort.on('message', workerMessage => worker(workerMessage))
 
 async function worker(data) {
     if (data.data instanceof Object) {
-        const promiseArray = data.data.map(url => sendRequest(url))
-
-        await Promise.all(promiseArray);
-        await parentPort.postMessage(`Worker #${data.index} has finished`)
-        await parentPort.close()
+        const promise = await Promise.all(data.data.map(url => sendRequest(url)));
+        parentPort.postMessage(promise)
+        parentPort.close()
     }
+
 }
 
 function sendRequest(url) {
-    return new Promise((resolve, reject) => {
-        axios.get(url).then((response) => {
-            console.log(`[${response.status}] ${url}`)
-            return resolve(response);
-        }).catch((error) => {
-            console.error(`[${error.response.status ?? error.response.statusText}] ${url}`)
-            return reject(error)
+    return axios.get(url, {timeout: 2000})
+        .then(response => {
+            return {
+                url: url,
+                status: response.status
+            }
         })
-    })
+        .catch(error => {
+            return {
+                url: url,
+                status: 521
+            }
+        })
+
 }
 
 // Cancel warning axios
-process.on('unhandledRejection', error => {});
+process.on('unhandledRejection', () => {
+});
